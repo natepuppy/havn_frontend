@@ -1,0 +1,58 @@
+# Pushing master deploys production. Pushing staging deploys staging.
+# The API URLs are the live Cloud Run addresses. The custom API domains are not attached yet.
+name: Deploy
+
+on:
+  push:
+    branches: [master, staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DEPLOY_ENV: ${{ github.ref_name == 'staging' && 'staging' || 'production' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          project_id: havn-frontend-${{ env.DEPLOY_ENV }}
+          workload_identity_provider: projects/210380788835/locations/global/workloadIdentityPools/github/providers/github
+          service_account: github-deploy@havn-frontend-${{ env.DEPLOY_ENV }}.iam.gserviceaccount.com
+
+      - name: Write the API URL into the Vite env file
+        run: |
+          if [ "$DEPLOY_ENV" = "staging" ]; then
+            api_url="https://havn-api-s4d5q6ugmq-uc.a.run.app"
+          else
+            api_url="https://havn-api-zwzm3tly5q-uc.a.run.app"
+          fi
+          umask 077
+          cat > ".env.${DEPLOY_ENV}" <<EOF
+          VITE_PEST_API_URL=${api_url}/
+          VITE_AUTH_API_URL=${api_url}
+          EOF
+
+      - name: Deploy to Firebase Hosting
+        run: ./scripts/deploy-hosting.sh "$DEPLOY_ENV"
