@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "staging": "havn-frontend-staging",
+    "production": "havn-frontend-production",
+    "default": "havn-frontend-staging"
+  }
+}
