@@ -44,6 +44,7 @@ export function DocumentsPage() {
         dataSource={documents.data?.data ?? []}
         columns={[
           { title: "Name", dataIndex: "name" },
+          { title: "Level", dataIndex: "level", render: (level: string | null) => level || "—" },
           { title: "Description", dataIndex: "description" },
           {
             title: "Active",

@@ -1,4 +1,5 @@
 import { useCreateRep, useDocuments, useMarkets, useRecruiters } from "@/hooks";
+import { LEVELS, levelLabel } from "@/lib/levels";
 import { can } from "@/lib/permissions";
 import { useGlobalStore } from "@/stores";
 import { US_STATES } from "@/lib/states";
@@ -10,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
 const SHIRT_SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL"];
-const LEVELS = ["Rookie", "Veteran", "Pro"] as const;
 const HOUSINGS = ["Single housing", "Married housing"] as const;
 
 type FormValues = {
@@ -41,6 +41,7 @@ export function NewRepPage() {
   const markets = useMarkets();
   const recruiters = useRecruiters();
   const createRep = useCreateRep();
+  const level = Form.useWatch("level", form);
   const user = useGlobalStore((state) => state.user);
   const canViewAll = can(user?.permissions, "view_all_reps");
   const activeDocuments = (documents.data?.data ?? []).filter((document) => document.active);
@@ -69,6 +70,17 @@ export function NewRepPage() {
     const missing = required.filter((id) => !current.includes(id));
     if (missing.length) form.setFieldValue("document_ids", [...current, ...missing]);
   }, [form, presetDocumentIds, requiredDocumentIds]);
+
+  useEffect(() => {
+    const levelDocuments = activeDocuments.filter((document) => document.level);
+    if (!levelDocuments.length) return;
+    const otherIds = levelDocuments.filter((document) => document.level !== level).map((document) => document.id);
+    const matching = levelDocuments.find((document) => document.level === level);
+    const current = (form.getFieldValue("document_ids") as number[] | undefined) ?? [];
+    const next = current.filter((id) => !otherIds.includes(id));
+    if (matching && !next.includes(matching.id)) next.push(matching.id);
+    if (next.join(",") !== current.join(",")) form.setFieldValue("document_ids", next);
+  }, [activeDocuments, form, level]);
 
   const handleSubmit = async (values: FormValues) => {
     const phone = formatPhone(values.phone);
@@ -198,7 +210,7 @@ export function NewRepPage() {
               />
             </Form.Item>
             <Form.Item label="Level" name="level" rules={[{ required: true, message: "Choose a level." }]}>
-              <Select options={LEVELS.map((level) => ({ value: level, label: level }))} />
+              <Select options={LEVELS.map((value) => ({ value, label: levelLabel(value) }))} />
             </Form.Item>
             <Form.Item label="Housing" name="housing" rules={[{ required: true, message: "Choose a housing type." }]}>
               <Select options={HOUSINGS.map((housing) => ({ value: housing, label: housing }))} />
@@ -230,7 +242,7 @@ export function NewRepPage() {
 
           <Typography.Title level={4}>Documents</Typography.Title>
           <Typography.Paragraph type="secondary">
-            Required documents stay selected. Default documents start selected and can be removed.
+            Rep Agreement goes to every rep. The addendum for their level is attached to that agreement.
           </Typography.Paragraph>
           <Form.Item
             name="document_ids"
@@ -239,13 +251,15 @@ export function NewRepPage() {
             <Checkbox.Group
               style={{ display: "grid", gap: 4 }}
               options={activeDocuments.map((document) => ({
-                label: document.required
-                  ? `${document.name} (required)`
-                  : document.description
-                    ? `${document.name} — ${document.description}`
-                    : document.name,
+                label: document.level
+                  ? `${document.name} (sent for ${document.level})`
+                  : document.required
+                    ? `${document.name} (required)`
+                    : document.description
+                      ? `${document.name} — ${document.description}`
+                      : document.name,
                 value: document.id,
-                disabled: document.required,
+                disabled: document.required || document.level != null,
               }))}
             />
           </Form.Item>

@@ -1,4 +1,5 @@
 import { useRecruitingTree, useRep, useSendRepDocuments, useUpdateRep } from "@/hooks";
+import { levelLabel } from "@/lib/levels";
 import { can } from "@/lib/permissions";
 import { useGlobalStore } from "@/stores";
 import type { DocumentDelivery, RecruitingNode } from "@/typings";
@@ -43,6 +44,13 @@ function OrgNodes({
       })}
     </ul>
   );
+}
+
+function deliveryColor(status: DocumentDelivery["status"]) {
+  if (status === "completed" || status === "sent") return "green";
+  if (status === "delivered") return "blue";
+  if (status === "failed" || status === "declined" || status === "voided") return "red";
+  return "default";
 }
 
 function formatWhen(value: number | string | null) {
@@ -143,7 +151,7 @@ export function RepPage() {
           <Descriptions.Item label="Shirt size">{rep.shirt_size || "—"}</Descriptions.Item>
           <Descriptions.Item label="Driver's license">{rep.drivers_license_number || "—"}</Descriptions.Item>
           <Descriptions.Item label="Market">{rep.market || "—"}</Descriptions.Item>
-          <Descriptions.Item label="Level">{rep.level || "—"}</Descriptions.Item>
+          <Descriptions.Item label="Level">{rep.level ? levelLabel(rep.level) : "—"}</Descriptions.Item>
           <Descriptions.Item label="Housing">{rep.housing || "—"}</Descriptions.Item>
           <Descriptions.Item label="Address">
             {[rep.street, rep.city, rep.state, rep.zip].filter(Boolean).join(", ") || "—"}
@@ -153,7 +161,13 @@ export function RepPage() {
             <Tag color={rep.status === "docs_sent" ? "green" : "gold"}>
               {rep.status === "docs_sent" ? "Docs sent" : "Pending"}
             </Tag>
-            {rep.agreement_completed ? <Tag color="green">Agreement sent</Tag> : <Tag>Agreement not sent</Tag>}
+            {rep.agreement_signed ? (
+              <Tag color="green">Agreement signed</Tag>
+            ) : rep.agreement_completed ? (
+              <Tag color="gold">Agreement sent</Tag>
+            ) : (
+              <Tag>Agreement not sent</Tag>
+            )}
           </Descriptions.Item>
           <Descriptions.Item label="Onboarding" span={2}>
             <Checkbox
@@ -193,9 +207,7 @@ export function RepPage() {
               title: "Status",
               dataIndex: "status",
               render: (status: DocumentDelivery["status"]) => (
-                <Tag color={status === "sent" ? "green" : status === "failed" ? "red" : "blue"}>
-                  {status}
-                </Tag>
+                <Tag color={deliveryColor(status)}>{status.replaceAll("_", " ")}</Tag>
               ),
             },
             {

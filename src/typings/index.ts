@@ -56,6 +56,7 @@ export type OnboardingDocument = {
   active: boolean;
   send_by_default: boolean;
   required: boolean;
+  level: "Rookie" | "Veteran" | "Pro" | null;
   position: number;
 };
 
@@ -83,7 +84,7 @@ export type DocumentDelivery = {
   onboarding_document_id: number;
   document_name: string;
   recipient_email: string;
-  status: "queued" | "sent" | "failed";
+  status: "queued" | "sent" | "delivered" | "completed" | "declined" | "voided" | "failed";
   sent_at: number | string | null;
   error_message: string | null;
 };
@@ -111,6 +112,7 @@ export type Rep = {
   active: boolean;
   onboarding_completed: boolean;
   agreement_completed: boolean;
+  agreement_signed: boolean;
   role: string | null;
   recruited_by_id: number;
   recruiter_name: string;

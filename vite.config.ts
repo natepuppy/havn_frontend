@@ -16,7 +16,7 @@ function localApiProxy(target: string) {
 
 export default defineConfig(({ mode }) => {
   const useLocalApi = mode === LOCAL_API_MODE;
-  const railsOrigin = "http://localhost:3000";
+  const railsOrigin = "http://localhost:3001";
 
   return {
     base: "/",

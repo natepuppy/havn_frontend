@@ -1,4 +1,5 @@
 import { useMarkets, useRecruiters, useReps, useRoles, useUpdateRep } from "@/hooks";
+import { levelLabel } from "@/lib/levels";
 import { can } from "@/lib/permissions";
 import { useGlobalStore } from "@/stores";
 import type { Rep } from "@/typings";
