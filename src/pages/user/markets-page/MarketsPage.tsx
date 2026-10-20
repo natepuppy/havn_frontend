@@ -1,8 +1,8 @@
-import { useCreateMarket, useMarkets } from "@/hooks";
+import { useCreateMarket, useDeleteMarket, useMarkets } from "@/hooks";
 import { can } from "@/lib/permissions";
 import { useGlobalStore } from "@/stores";
 import type { Market } from "@/typings";
-import { Button, Form, Input, Modal, Table } from "antd";
+import { Button, Form, Input, Modal, Popconfirm, Table } from "antd";
 import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -11,6 +11,7 @@ export function MarketsPage() {
   const user = useGlobalStore((state) => state.user);
   const markets = useMarkets();
   const createMarket = useCreateMarket();
+  const removeMarket = useDeleteMarket();
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm<{ name: string }>();
 
@@ -34,7 +35,26 @@ export function MarketsPage() {
         loading={markets.isLoading}
         pagination={false}
         dataSource={markets.data?.data ?? []}
-        columns={[{ title: "Name", dataIndex: "name" }]}
+        columns={[
+          { title: "Name", dataIndex: "name" },
+          {
+            title: "",
+            width: 96,
+            render: (_value: unknown, market) => (
+              <Popconfirm
+                title="Delete this market?"
+                description="It will no longer be offered on a new rep."
+                okText="Delete"
+                okButtonProps={{ danger: true }}
+                onConfirm={() => void removeMarket.mutateAsync(market.id)}
+              >
+                <Button type="link" danger>
+                  Delete
+                </Button>
+              </Popconfirm>
+            ),
+          },
+        ]}
       />
       <Modal
         title="Add market"

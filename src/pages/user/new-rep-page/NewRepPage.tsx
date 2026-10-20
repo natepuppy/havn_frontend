@@ -6,7 +6,7 @@ import { US_STATES } from "@/lib/states";
 import { formatPhone } from "@/utils";
 import { Button, Card, Checkbox, DatePicker, Form, Input, Select, Typography } from "antd";
 import type { Dayjs } from "dayjs";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 
@@ -44,7 +44,11 @@ export function NewRepPage() {
   const level = Form.useWatch("level", form);
   const user = useGlobalStore((state) => state.user);
   const canViewAll = can(user?.permissions, "view_all_reps");
-  const activeDocuments = (documents.data?.data ?? []).filter((document) => document.active);
+  const isAdmin = user?.role === "admin";
+  const activeDocuments = useMemo(
+    () => (documents.data?.data ?? []).filter((document) => document.active),
+    [documents.data],
+  );
   const presetDocumentIds = activeDocuments
     .filter((document) => document.send_by_default || document.required)
     .map((document) => document.id)
@@ -71,6 +75,9 @@ export function NewRepPage() {
     if (missing.length) form.setFieldValue("document_ids", [...current, ...missing]);
   }, [form, presetDocumentIds, requiredDocumentIds]);
 
+  // When the level changes, swap the selected addendum to the one for that level.
+  // activeDocuments is memoized so this only re-runs on a real level/data change,
+  // which lets an admin's manual edits stick until they pick a different level.
   useEffect(() => {
     const levelDocuments = activeDocuments.filter((document) => document.level);
     if (!levelDocuments.length) return;
@@ -242,7 +249,8 @@ export function NewRepPage() {
 
           <Typography.Title level={4}>Documents</Typography.Title>
           <Typography.Paragraph type="secondary">
-            Rep Agreement goes to every rep. The addendum for their level is attached to that agreement.
+            Rep Agreement goes to every rep. The addendum is picked from the level above and attached to that
+            agreement.{isAdmin ? " As an admin you can change which addendum is sent." : " Only an admin can change it."}
           </Typography.Paragraph>
           <Form.Item
             name="document_ids"
@@ -259,7 +267,7 @@ export function NewRepPage() {
                       ? `${document.name} — ${document.description}`
                       : document.name,
                 value: document.id,
-                disabled: document.required || document.level != null,
+                disabled: document.required || (document.level != null && !isAdmin),
               }))}
             />
           </Form.Item>

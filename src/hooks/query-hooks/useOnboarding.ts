@@ -1,6 +1,7 @@
 import {
   createDocument,
   createMarket,
+  deleteMarket,
   createRole,
   createTeam,
   deleteDocument,
@@ -93,6 +94,16 @@ export function useCreateMarket() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (name: string) => createMarket(name),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.MARKETS] });
+    },
+  });
+}
+
+export function useDeleteMarket() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => deleteMarket(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [QueryKeys.MARKETS] });
     },
