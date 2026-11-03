@@ -176,6 +176,7 @@ export function useUpdateRep() {
     onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: [QueryKeys.REPS] });
       void queryClient.invalidateQueries({ queryKey: [QueryKeys.REP, String(variables.id)] });
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.USERS] });
     },
   });
 }
@@ -206,6 +207,7 @@ export function useUpdateManagedUser() {
       updateManagedUser(user),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [QueryKeys.USERS] });
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.REPS] });
     },
   });
 }

@@ -5,7 +5,7 @@ export const PERMISSION_ACTIONS: Array<{ action: keyof PermissionMap; label: str
   {
     action: "view_all_reps",
     label: "View all reps",
-    description: "See every rep. Without this, a person only sees the reps they recruited.",
+    description: "See every rep. The rep role ignores this and only sees people they recruited.",
   },
   { action: "manage_reps", label: "Manage reps", description: "Onboard a rep and send their documents." },
   { action: "manage_documents", label: "Manage documents", description: "Add documents and turn them on or off." },
