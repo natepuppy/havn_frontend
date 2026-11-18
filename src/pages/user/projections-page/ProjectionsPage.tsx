@@ -1,7 +1,7 @@
 import { useProjections, useUpdateProjections } from "@/hooks";
 import { LEVELS } from "@/lib/levels";
 import { useGlobalStore } from "@/stores";
-import { Button, Card, InputNumber, Table, Tag, Typography } from "antd";
+import { Button, Card, InputNumber, Statistic, Table, Tag, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -26,6 +26,12 @@ function adjustedRevenue(projected: number | null, level: string | null, rates: 
 
 function csvCell(value: string | number | null) {
   return `"${String(value ?? "").replaceAll('"', '""')}"`;
+}
+
+function levelProjectedRevenue(rows: Draft[], level: string, rates: Record<string, number | null>) {
+  return rows
+    .filter((row) => row.active && row.level === level)
+    .reduce((sum, row) => sum + (adjustedRevenue(row.projected, row.level, rates) ?? 0), 0);
 }
 
 export function ProjectionsPage() {
@@ -64,8 +70,18 @@ export function ProjectionsPage() {
     setDrafts((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)));
   };
 
+  const rookieProjected = levelProjectedRevenue(drafts, "Rookie", rates);
+  const proProjected = levelProjectedRevenue(drafts, "Pro", rates);
+  const combinedProjected = rookieProjected + proProjected;
+
   const download = () => {
     const rows = [
+      ["Rookie Projected Revenue", rookieProjected],
+      ["Pro Projected Revenue", proProjected],
+      ["Combined Projected Revenue", combinedProjected],
+      ["Rookie Finish Rate", rates.Rookie ?? ""],
+      ["Pro Finish Rate", rates.Pro ?? ""],
+      [],
       ["Rep", "Level", "Last Year Revenue", "Projected Revenue Next Year", "Projected Finish Rate", "Adjusted Projected Revenue"],
       ...drafts.map((row) => {
         const rate = row.level ? rates[row.level] : null;
@@ -123,8 +139,13 @@ export function ProjectionsPage() {
 
       <Card title="Projected finish rate">
         <Typography.Paragraph type="secondary">
-          Adjusted projected revenue is next year's projection multiplied by the finish rate for that rep's level.
+          Each level's projected revenue is the sum of active reps at that level, multiplied by the finish rate. Changing a finish rate updates all three totals.
         </Typography.Paragraph>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 16 }}>
+          <Statistic title="Rookie projected revenue" value={rookieProjected} prefix="$" precision={0} />
+          <Statistic title="Pro projected revenue" value={proProjected} prefix="$" precision={0} />
+          <Statistic title="Combined projected revenue" value={combinedProjected} prefix="$" precision={0} />
+        </div>
         <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
           {LEVELS.map((level) => (
             <label key={level} style={{ display: "grid", gap: 4 }}>
