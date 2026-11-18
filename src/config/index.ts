@@ -8,4 +8,6 @@ export const QueryKeys = {
   ROLES: "roles",
   TEAMS: "teams",
   PERMISSIONS: "permissions",
+  PROJECTIONS: "projections",
+  RECRUITING_GOALS: "recruiting-goals",
 } as const;

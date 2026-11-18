@@ -13,3 +13,11 @@ export const createRole = async (name: string) => {
   }
   return response.data;
 };
+
+export const updateRole = async (role: { id: number; name: string }) => {
+  const response = await api.put<ApiResponse<Role>>("/roles", { role });
+  if (response.data.errors?.length) {
+    throw new Error(response.data.errors.join(", "));
+  }
+  return response.data;
+};

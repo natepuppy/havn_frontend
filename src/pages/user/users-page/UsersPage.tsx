@@ -1,6 +1,5 @@
 import {
   useCreateManagedUser,
-  useCreateRole,
   useCreateTeam,
   useManagedUsers,
   useResetManagedUserPassword,
@@ -31,14 +30,11 @@ export function UsersPage() {
   const users = useManagedUsers();
   const roles = useRoles();
   const teams = useTeams();
-  const createRole = useCreateRole();
   const createTeam = useCreateTeam();
   const createUser = useCreateManagedUser();
   const updateUser = useUpdateManagedUser();
   const resetPassword = useResetManagedUserPassword();
   const [open, setOpen] = useState(false);
-  const [roleOpen, setRoleOpen] = useState(false);
-  const [roleName, setRoleName] = useState("");
   const [teamName, setTeamName] = useState("");
   const [editing, setEditing] = useState<AppUser | null>(null);
   const [form] = Form.useForm<UserForm>();
@@ -113,15 +109,6 @@ export function UsersPage() {
     toast.success("Team added.");
   };
 
-  const addRole = async () => {
-    const name = roleName.trim();
-    if (!name) return;
-    await createRole.mutateAsync(name);
-    setRoleName("");
-    setRoleOpen(false);
-    toast.success("Role created.");
-  };
-
   return (
     <div className="page">
       <div className="page-header">
@@ -129,12 +116,9 @@ export function UsersPage() {
           <h1>Users</h1>
           <p>Accounts that can sign in. Creating a rep also creates a login.</p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          <Button onClick={() => setRoleOpen(true)}>New role</Button>
-          <Button type="primary" onClick={openCreate}>
-            Add user
-          </Button>
-        </div>
+        <Button type="primary" onClick={openCreate}>
+          Add user
+        </Button>
       </div>
       <Table<AppUser>
         rowKey="id"
@@ -272,21 +256,6 @@ export function UsersPage() {
             <Input.Password autoComplete="new-password" />
           </Form.Item>
         </Form>
-      </Modal>
-      <Modal
-        title="New role"
-        open={roleOpen}
-        onCancel={() => setRoleOpen(false)}
-        onOk={() => void addRole()}
-        confirmLoading={createRole.isPending}
-        okText="Create role"
-      >
-        <Input
-          value={roleName}
-          placeholder="Role name"
-          onChange={(event) => setRoleName(event.target.value)}
-          onPressEnter={() => void addRole()}
-        />
       </Modal>
     </div>
   );

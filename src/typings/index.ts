@@ -56,7 +56,7 @@ export type OnboardingDocument = {
   active: boolean;
   send_by_default: boolean;
   required: boolean;
-  level: "Rookie" | "Veteran" | "Pro" | null;
+  level: "Rookie" | "Pro" | null;
   position: number;
 };
 
@@ -84,7 +84,7 @@ export type DocumentDelivery = {
   onboarding_document_id: number;
   document_name: string;
   recipient_email: string;
-  status: "queued" | "sent" | "delivered" | "completed" | "declined" | "voided" | "failed";
+  status: "queued" | "sent" | "delivered" | "awaiting_corporate_signature" | "completed" | "declined" | "voided" | "failed";
   sent_at: number | string | null;
   error_message: string | null;
 };
@@ -113,7 +113,10 @@ export type Rep = {
   onboarding_completed: boolean;
   agreement_completed: boolean;
   agreement_signed: boolean;
+  agreement_status: string;
+  rep_signed: boolean;
   role: string | null;
+  user_id: number | null;
   recruited_by_id: number;
   recruiter_name: string;
   recruiter_email: string;
@@ -135,7 +138,7 @@ export type NewRepInput = {
   shirt_size: string;
   drivers_license_number: string;
   market?: string;
-  level: "Rookie" | "Veteran" | "Pro";
+  level: "Rookie" | "Pro";
   housing: "Single housing" | "Married housing";
   notes?: string;
   recruited_by_id: number;

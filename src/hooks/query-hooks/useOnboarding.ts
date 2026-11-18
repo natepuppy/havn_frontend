@@ -12,20 +12,28 @@ import {
   getMarkets,
   getManagedUsers,
   getPermissions,
+  getProjections,
+  getRecruitingGoals,
   getRecruiters,
   getRecruitingTree,
   getRep,
   getReps,
   getRoles,
   getTeams,
+  reassignDownline,
   resetManagedUserPassword,
   sendRepDocuments,
   updateDocument,
   updateManagedUser,
   updatePermissions,
+  updateProjections,
+  updateRecruitingGoals,
   updateRep,
+  updateRole,
 } from "@/api";
 import { QueryKeys } from "@/config";
+import type { ProjectionInput } from "@/api/projections.api";
+import type { RecruitingGoalInput } from "@/api/recruitingGoals.api";
 import type { RepFilters } from "@/api/reps.api";
 import type { NewManagedUser } from "@/api/users.api";
 import type { NewRepInput, OnboardingDocument, Permission } from "@/typings";
@@ -135,6 +143,44 @@ export function useManagedUsers() {
   });
 }
 
+export function useProjections(enabled = true) {
+  return useQuery({
+    queryKey: [QueryKeys.PROJECTIONS],
+    queryFn: getProjections,
+    enabled,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useUpdateProjections() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (projections: ProjectionInput) => updateProjections(projections),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.PROJECTIONS] });
+    },
+  });
+}
+
+export function useRecruitingGoals(enabled = true) {
+  return useQuery({
+    queryKey: [QueryKeys.RECRUITING_GOALS],
+    queryFn: getRecruitingGoals,
+    enabled,
+    refetchOnWindowFocus: false,
+  });
+}
+
+export function useUpdateRecruitingGoals() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (goals: RecruitingGoalInput) => updateRecruitingGoals(goals),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.RECRUITING_GOALS] });
+    },
+  });
+}
+
 export function useRoles() {
   return useQuery({
     queryKey: [QueryKeys.ROLES],
@@ -148,6 +194,29 @@ export function useCreateRole() {
     mutationFn: (name: string) => createRole(name),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [QueryKeys.ROLES] });
+    },
+  });
+}
+
+export function useUpdateRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (role: { id: number; name: string }) => updateRole(role),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.ROLES] });
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.REPS] });
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.USERS] });
+    },
+  });
+}
+
+export function useReassignDownline() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, recruitedById }: { id: number; recruitedById: number }) => reassignDownline(id, recruitedById),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.REPS] });
+      void queryClient.invalidateQueries({ queryKey: [QueryKeys.REP] });
     },
   });
 }

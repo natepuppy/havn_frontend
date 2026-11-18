@@ -1,4 +1,5 @@
 import { useMarkets, useRecruiters, useReps, useRoles, useUpdateRep } from "@/hooks";
+import { agreementColor, agreementLabel, repStatusLabel } from "@/lib/agreement";
 import { can } from "@/lib/permissions";
 import { useGlobalStore } from "@/stores";
 import type { Rep } from "@/typings";
@@ -102,7 +103,7 @@ export function RepsPage() {
             { value: "none", label: "No paperwork sent" },
             { value: "sent", label: "Paperwork sent" },
             { value: "agreement", label: "Agreement sent" },
-            { value: "completed", label: "Onboarding complete" },
+            { value: "completed", label: "Agreement completed" },
           ]}
         />
         <Select
@@ -162,36 +163,34 @@ export function RepsPage() {
           },
           {
             title: "Agreement",
-            dataIndex: "agreement_completed",
-            render: (sent: boolean) => (sent ? <Tag color="green">Sent</Tag> : <Tag>Not sent</Tag>),
-          },
-          {
-            title: "Onboarding",
-            dataIndex: "onboarding_completed",
-            render: (done: boolean) => (done ? <Tag color="green">Complete</Tag> : <Tag color="gold">Open</Tag>),
+            dataIndex: "agreement_status",
+            render: (status: string) => <Tag color={agreementColor(status)}>{agreementLabel(status)}</Tag>,
           },
           {
             title: "Status",
             dataIndex: "active",
-            render: (isActive: boolean, rep) => (
+            render: (_isActive: boolean, rep) => {
+              const label = repStatusLabel(rep);
+              return (
               <div style={{ display: "flex", gap: 8, alignItems: "center" }} onClick={(event) => event.stopPropagation()}>
-                <Tag color={isActive ? "green" : "default"}>{isActive ? "Active" : "Deactivated"}</Tag>
+                <Tag color={label === "Active" ? "green" : label === "Pending" ? "gold" : "default"}>{label}</Tag>
                 {canManage ? (
                   <Button
                     size="small"
-                    danger={isActive}
+                    danger={rep.active}
                     loading={updateRep.isPending}
                     onClick={() =>
                       void updateRep
-                        .mutateAsync({ id: rep.id, active: !isActive })
-                        .then(() => toast.success(isActive ? "Rep deactivated." : "Rep restored."))
+                        .mutateAsync({ id: rep.id, active: !rep.active })
+                        .then(() => toast.success(rep.active ? "Rep deactivated." : "Rep restored."))
                     }
                   >
-                    {isActive ? "Deactivate" : "Restore"}
+                    {rep.active ? "Deactivate" : "Restore"}
                   </Button>
                 ) : null}
               </div>
-            ),
+              );
+            },
           },
         ]}
       />

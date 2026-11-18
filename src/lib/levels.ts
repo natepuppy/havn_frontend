@@ -1,4 +1,4 @@
-export const LEVELS = ["Rookie", "Veteran", "Pro"] as const;
+export const LEVELS = ["Rookie", "Pro"] as const;
 
 export type Level = (typeof LEVELS)[number];
 

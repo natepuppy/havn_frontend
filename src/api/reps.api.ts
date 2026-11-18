@@ -42,8 +42,18 @@ export const getRecruitingTree = async (id: string) => {
   return response.data;
 };
 
-export const updateRep = async (rep: { id: number; active?: boolean; onboarding_completed?: boolean }) => {
+export const updateRep = async (rep: { id: number; active?: boolean; recruited_by_id?: number }) => {
   const response = await api.put<ApiResponse<Rep[]>>("/reps", { reps: [rep] });
+  if (response.data.errors?.length) {
+    throw new Error(response.data.errors.join(", "));
+  }
+  return response.data;
+};
+
+export const reassignDownline = async (id: number, recruitedById: number) => {
+  const response = await api.post<ApiResponse<{ reassigned: number }>>(`/reps/${id}/reassign_downline`, {
+    recruited_by_id: recruitedById,
+  });
   if (response.data.errors?.length) {
     throw new Error(response.data.errors.join(", "));
   }

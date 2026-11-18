@@ -2,7 +2,7 @@ import { getCurrentUser, logout } from "@/api";
 import { can } from "@/lib/permissions";
 import { useGlobalStore } from "@/stores";
 import { setStorageItem } from "@/utils/safeStorage";
-import { LogoutOutlined, UserAddOutlined, TeamOutlined, FileTextOutlined, UserOutlined, SafetyOutlined, EnvironmentOutlined, BulbOutlined } from "@ant-design/icons";
+import { LogoutOutlined, UserAddOutlined, TeamOutlined, FileTextOutlined, UserOutlined, SafetyOutlined, EnvironmentOutlined, BulbOutlined, IdcardOutlined, FundOutlined, FlagOutlined } from "@ant-design/icons";
 import { Button, Layout, Menu } from "antd";
 import { useEffect, type PropsWithChildren } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -17,7 +17,13 @@ export function AppLayout({ children }: PropsWithChildren) {
   const theme = useGlobalStore((state) => state.theme);
   const setTheme = useGlobalStore((state) => state.setTheme);
   const dark = theme === "dark";
-  const selected = location.pathname.startsWith("/permissions")
+  const selected = location.pathname.startsWith("/recruiting-goals")
+    ? "/recruiting-goals"
+    : location.pathname.startsWith("/projections")
+    ? "/projections"
+    : location.pathname.startsWith("/roles")
+    ? "/roles"
+    : location.pathname.startsWith("/permissions")
     ? "/permissions"
     : location.pathname.startsWith("/users")
       ? "/users"
@@ -45,9 +51,12 @@ export function AppLayout({ children }: PropsWithChildren) {
       ? { key: "/markets", icon: <EnvironmentOutlined />, label: "Markets" }
       : null,
     can(user?.permissions, "manage_users") ? { key: "/users", icon: <UserOutlined />, label: "Users" } : null,
+    can(user?.permissions, "manage_users") ? { key: "/roles", icon: <IdcardOutlined />, label: "Roles" } : null,
     can(user?.permissions, "manage_permissions")
       ? { key: "/permissions", icon: <SafetyOutlined />, label: "Permissions" }
       : null,
+    user?.role === "admin" ? { key: "/projections", icon: <FundOutlined />, label: "Projections" } : null,
+    user?.role === "admin" ? { key: "/recruiting-goals", icon: <FlagOutlined />, label: "Recruiting Goals" } : null,
   ].filter((item) => item !== null);
 
   return (

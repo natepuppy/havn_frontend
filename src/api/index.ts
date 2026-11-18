@@ -2,6 +2,8 @@ export * from "./auth.api";
 export * from "./documents.api";
 export * from "./markets.api";
 export * from "./permissions.api";
+export * from "./projections.api";
+export * from "./recruitingGoals.api";
 export * from "./recruiters.api";
 export * from "./reps.api";
 export * from "./roles.api";
